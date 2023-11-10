@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/containerd/containerd"
 	"net/http"
 	"os"
 	"os/signal"
@@ -15,7 +16,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	docker "github.com/fsouza/go-dockerclient"
 	"github.com/namsral/flag"
 	metrics "github.com/rcrowley/go-metrics"
 	"github.com/rcrowley/go-metrics/exp"
@@ -40,7 +40,7 @@ type Job struct {
 }
 
 func init() {
-	flag.StringVar(&dockerEndpoint, "docker-host", "unix:////var/run/docker.sock", "Address to Docker host")
+	flag.StringVar(&dockerEndpoint, "docker-host", "unix:////run/containerd/containerd.sock", "Address to Containerd host")
 	flag.StringVar(&beanstalkHost, "beanstalk-host", "beanstalk:11300", "Address and port to beanstalkd")
 	flag.StringVar(&jobsTube, "tube", "jobs", "Name of tube to read jobs from")
 	flag.IntVar(&workers, "workers", 1, "Number of jobs to process at once")
@@ -58,8 +58,9 @@ func main() {
 		help()
 	}
 
-	log.WithField("DOCKER_HOST", dockerEndpoint).Info("Connecting to Docker")
-	client, _ := docker.NewClient(dockerEndpoint)
+	log.WithField("DOCKER_HOST", dockerEndpoint).Info("Connecting to Containerd")
+	client, _ := containerd.New(dockerEndpoint)
+	//client, _ := docker.NewClient(dockerEndpoint)
 
 	stop := make(chan struct{}, 1)
 	go func() {

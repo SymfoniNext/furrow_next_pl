@@ -156,7 +156,7 @@ $ make test
 Build a binary
 
 ```
-$ CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags "-X 'github.com/SymfoniNext/furrow/furrow.buildDate=$(date)' -X github.com/SymfoniNext/furrow/furrow.commitID=$(git rev-parse --short HEAD) -w -extld ld -extldflags -static" -x -o _furrow .
+$ CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags "-X 'github.com/SymfoniNext/furrow_next/furrow_next.buildDate=$(date)' -X github.com/SymfoniNext/furrow_next/furrow_next.commitID=$(git rev-parse --short HEAD) -w -extld ld -extldflags -static" -x -o _furrow .
 ```
 
 or

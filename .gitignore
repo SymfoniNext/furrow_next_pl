@@ -1,5 +1,5 @@
 _furrow
 #furrow/job.pb.go
 .idea
-vendor
-/vendor/
+
+/vendor
