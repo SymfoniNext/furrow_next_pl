@@ -34,12 +34,12 @@ type jobRunner struct {
 	containerRemoval chan string
 
 	// Docker hub username
-	username *string
+	username string
 	// Docker hub password
-	password *string
+	password string
 }
 
-func NewRunner(client *containerd.Client, username *string, password *string) furrow.Runner {
+func NewRunner(client *containerd.Client, username string, password string) furrow.Runner {
 	job := &jobRunner{
 		client:           client,
 		containerRemoval: make(chan string),

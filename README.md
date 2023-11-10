@@ -173,3 +173,12 @@ $ make build
 - [ ] Jobs as services
 - [ ] Do something clever with Docker node metrics (stats) and only accept jobs when the node isn't busy
 
+# Working with go
+## Install libs
+- go get -u
+- go mod tidy
+- go mod vendor
+
+## Cleanup libs
+- go clean -modcache 
+- Remove vendor

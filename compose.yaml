@@ -1,0 +1,10 @@
+services:
+  beanstalkd:
+    image: maateen/docker-beanstalkd
+    ports:
+      - 11300
+  furrow:
+    depends_on:
+      beanstalkd:
+        condition: service_started
+    build: .
