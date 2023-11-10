@@ -3,3 +3,4 @@ _furrow
 .idea
 
 /vendor
+/go.mod
