@@ -4,3 +4,4 @@ _furrow
 
 /vendor
 /go.mod
+/go.sum
