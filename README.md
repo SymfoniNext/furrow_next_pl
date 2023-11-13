@@ -174,11 +174,34 @@ $ make build
 - [ ] Do something clever with Docker node metrics (stats) and only accept jobs when the node isn't busy
 
 # Working with go
+## First run only
+- `go mod init`
+
 ## Install libs
-- go get -u
-- go mod tidy
-- go mod vendor
+- `go get -u`
+- `go mod tidy`
+- `go mod vendor`
 
 ## Cleanup libs
-- go clean -modcache 
-- Remove vendor
+- `go clean -modcache`
+- Remove vendor directory
+
+# Push image to artifact repo
+- `gcloud auth configure-docker europe-west1-docker.pkg.dev`
+- `docker build -t furrow_next:<version> .`
+- `docker tag furrow_next:<version> europe-west1-docker.pkg.dev/suite-183211/suite-repo/furrow_next:<version>`
+- `docker push europe-west1-docker.pkg.dev/suite-183211/suite-repo/furrow_next:<version>`
+
+# Running tester
+Cd to `./tester` and run `npm i`
+
+To run tester:
+
+(In another terminal)
+```shell
+kubectl port-forward --namespace suite-production $(kubectl get pod --namespace suite-production --selector="customer=next,product=suite,role=webserver,tier=backend" --output jsonpath='{.items[0].metadata.name}') 11300:11300
+```
+
+```shell
+node tester.js
+```

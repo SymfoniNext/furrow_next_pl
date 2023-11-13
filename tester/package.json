@@ -1,0 +1,16 @@
+{
+  "name": "furrow-tester",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "node-beanstalk": "^1.6.8",
+    "protobufjs": "^7.2.5"
+  }
+}

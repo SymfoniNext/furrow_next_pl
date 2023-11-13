@@ -40,7 +40,7 @@ type Job struct {
 }
 
 func init() {
-	flag.StringVar(&dockerEndpoint, "docker-host", "unix:////run/containerd/containerd.sock", "Address to Containerd host")
+	flag.StringVar(&dockerEndpoint, "docker-host", "/run/containerd/containerd.sock", "Address to Containerd host")
 	flag.StringVar(&beanstalkHost, "beanstalk-host", "beanstalk:11300", "Address and port to beanstalkd")
 	flag.StringVar(&jobsTube, "tube", "jobs", "Name of tube to read jobs from")
 	flag.IntVar(&workers, "workers", 1, "Number of jobs to process at once")
@@ -59,8 +59,14 @@ func main() {
 	}
 
 	log.WithField("DOCKER_HOST", dockerEndpoint).Info("Connecting to Containerd")
-	client, _ := containerd.New(dockerEndpoint)
-	//client, _ := docker.NewClient(dockerEndpoint)
+	client, err := containerd.New(dockerEndpoint, containerd.WithDefaultNamespace("docker"))
+	if err != nil {
+		log.Error("Cannot connect to containerd socket.", err)
+		return
+	}
+
+	state := client.Conn().GetState()
+	log.Info("Connection state to containerd: " + state.String())
 
 	stop := make(chan struct{}, 1)
 	go func() {
