@@ -7,7 +7,7 @@ import (
 
 	"context"
 
-	"github.com/SymfoniNext/furrow_next/furrow"
+	"github.com/SymfoniNext/furrow_next_pl/furrow"
 
 	log "github.com/sirupsen/logrus"
 

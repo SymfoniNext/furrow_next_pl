@@ -7,12 +7,11 @@ import (
 	"github.com/containerd/containerd/oci"
 	"github.com/containerd/containerd/remotes"
 	"github.com/containerd/containerd/remotes/docker"
-	"github.com/opencontainers/runtime-spec/specs-go"
 	"strconv"
 	"sync"
 
-	"github.com/SymfoniNext/furrow_next/broker"
-	"github.com/SymfoniNext/furrow_next/furrow"
+	"github.com/SymfoniNext/furrow_next_pl/broker"
+	"github.com/SymfoniNext/furrow_next_pl/furrow"
 
 	log "github.com/sirupsen/logrus"
 
@@ -104,7 +103,15 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 
 	// Image doesn't exist, so we need to get it
 	// how are we pulling private repos?
-	resolver := &DockerResolver{}
+	resolver := docker.NewResolver(docker.ResolverOptions{
+		Hosts: docker.ConfigureDefaultRegistries(
+			docker.WithAuthorizer(docker.NewDockerAuthorizer(
+				docker.WithAuthCreds(func(host string) (string, string, error) {
+					return j.username, j.password, nil
+				}),
+			)),
+		),
+	})
 
 	image, err := j.client.Pull(ctx, job.GetImage(), containerd.WithResolver(resolver))
 	if err != nil {

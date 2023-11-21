@@ -10,9 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/SymfoniNext/furrow_next/broker"
-	"github.com/SymfoniNext/furrow_next/furrow"
-	"github.com/SymfoniNext/furrow_next/jobs"
+	"github.com/SymfoniNext/furrow_next_pl/broker"
+	"github.com/SymfoniNext/furrow_next_pl/furrow"
+	"github.com/SymfoniNext/furrow_next_pl/jobs"
 
 	log "github.com/sirupsen/logrus"
 
