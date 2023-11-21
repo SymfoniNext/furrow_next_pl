@@ -7,6 +7,7 @@ import (
 	"github.com/containerd/containerd/oci"
 	"github.com/containerd/containerd/remotes"
 	"github.com/containerd/containerd/remotes/docker"
+	"github.com/opencontainers/runtime-spec/specs-go"
 	"strconv"
 	"sync"
 
