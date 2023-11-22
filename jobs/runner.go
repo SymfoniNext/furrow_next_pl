@@ -5,9 +5,9 @@ import (
 	"github.com/containerd/containerd"
 	"github.com/containerd/containerd/cio"
 	"github.com/containerd/containerd/oci"
-	"github.com/containerd/containerd/remotes"
 	"github.com/containerd/containerd/remotes/docker"
 	"github.com/opencontainers/runtime-spec/specs-go"
+	"net/http"
 	"strconv"
 	"sync"
 
@@ -52,32 +52,6 @@ func NewRunner(client *containerd.Client, username string, password string) furr
 	return job
 }
 
-type DockerResolver struct {
-	// You can add any necessary fields or configurations here
-}
-
-func (r *DockerResolver) Resolve(ctx context.Context, ref string) (name string, desc remotes.Resolver, err error) {
-	resolvedRef := ref
-
-	fetcher := docker.NewResolver(docker.ResolverOptions{Hosts: func(s string) ([]docker.RegistryHost, error) {
-		hosts := make([]docker.RegistryHost, 0, 1)
-
-		hosts = append(hosts, docker.RegistryHost{
-			Client:       nil,
-			Authorizer:   nil,
-			Host:         "",
-			Scheme:       "",
-			Path:         "",
-			Capabilities: 0,
-			Header:       nil,
-		})
-
-		return hosts, nil
-	}})
-
-	return resolvedRef, fetcher, nil
-}
-
 func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 	if job.GetImage() == "" {
 		log.Warnf("Received empty job: (%#v)", job)
@@ -105,14 +79,34 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 	// Image doesn't exist, so we need to get it
 	// how are we pulling private repos?
 	resolver := docker.NewResolver(docker.ResolverOptions{
-		Hosts: docker.ConfigureDefaultRegistries(
-			docker.WithAuthorizer(docker.NewDockerAuthorizer(
-				docker.WithAuthCreds(func(host string) (string, string, error) {
-					return j.username, j.password, nil
-				}),
-			)),
-		),
+		Hosts: func(host string) ([]docker.RegistryHost, error) {
+			if host == "docker.io" {
+				return []docker.RegistryHost{
+					{
+						Client: http.DefaultClient,
+						Host:   host,
+						Scheme: "https",
+						Path:   "/v2",
+						Authorizer: docker.NewDockerAuthorizer(docker.WithAuthCreds(func(host string) (string, string, error) {
+							return j.username, j.password, nil
+						})),
+						Capabilities: docker.HostCapabilityPull | docker.HostCapabilityResolve | docker.HostCapabilityPush,
+					},
+				}, nil
+			}
+			// Dla innych hostów użyj domyślnej konfiguracji.
+			return docker.ConfigureDefaultRegistries()(host)
+		},
 	})
+	//resolver := docker.NewResolver(docker.ResolverOptions{
+	//	Hosts: docker.ConfigureDefaultRegistries(
+	//		docker.WithAuthorizer(docker.NewDockerAuthorizer(
+	//			docker.WithAuthCreds(func(host string) (string, string, error) {
+	//				return j.username, j.password, nil
+	//			}),
+	//		)),
+	//	),
+	//})
 
 	image, err := j.client.Pull(ctx, job.GetImage(), containerd.WithResolver(resolver))
 	if err != nil {
@@ -132,6 +126,7 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 		if job.Volumes.GetOut() != "" {
 			binds = append(binds, job.Volumes.GetIn()+":"+volumeOutMount)
 		}
+
 		if len(binds) > 0 {
 			hostConfig = &oci.Spec{
 				Mounts: []specs.Mount{
