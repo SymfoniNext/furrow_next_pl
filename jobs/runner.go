@@ -85,8 +85,8 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 					{
 						Client: http.DefaultClient,
 						Host:   host,
-						Scheme: "https",
-						Path:   "/v2",
+						Scheme: "http",
+						Path:   "",
 						Authorizer: docker.NewDockerAuthorizer(docker.WithAuthCreds(func(host string) (string, string, error) {
 							return j.username, j.password, nil
 						})),
@@ -94,19 +94,9 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 					},
 				}, nil
 			}
-			// Dla innych hostów użyj domyślnej konfiguracji.
 			return docker.ConfigureDefaultRegistries()(host)
 		},
 	})
-	//resolver := docker.NewResolver(docker.ResolverOptions{
-	//	Hosts: docker.ConfigureDefaultRegistries(
-	//		docker.WithAuthorizer(docker.NewDockerAuthorizer(
-	//			docker.WithAuthCreds(func(host string) (string, string, error) {
-	//				return j.username, j.password, nil
-	//			}),
-	//		)),
-	//	),
-	//})
 
 	image, err := j.client.Pull(ctx, job.GetImage(), containerd.WithResolver(resolver))
 	if err != nil {
