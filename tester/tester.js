@@ -15,10 +15,9 @@ load('job.proto', (err, root) => {
     throw err;
 
   var job = root.lookupType("janochapack.Job");
-
   var payload = {
     RequestID: "12345",
-    Image: "https://registry.hub.docker.com/v2/symfoni/doc-converter:7087df2",
+    Image: "docker.io/library/redis:latest",
     Cmd: ["-m conversion -in /in/DOCUMENT_CONTENT-1146645.pdf -f PNG -image_width 200 -image_only_first_page"]
   }
 
