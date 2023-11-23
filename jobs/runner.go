@@ -111,7 +111,7 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 		}
 	}
 	// option to schedule a service instead?
-	log.WithFields(logFields).Info("Creating container")
+	log.WithFields(logFields).Info("Creating container...")
 	container, err := j.client.NewContainer(
 		ctx,
 		strconv.FormatUint(jobID, 10),
@@ -122,6 +122,7 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 			//oci.WithMounts(hostConfig.Mounts),
 		),
 	)
+
 	defer container.Delete(ctx, containerd.WithSnapshotCleanup)
 
 	if err != nil {
