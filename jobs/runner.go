@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/SymfoniNext/furrow_next_pl/broker"
 	"github.com/SymfoniNext/furrow_next_pl/furrow"
-	"github.com/opencontainers/runtime-spec/specs-go"
 
 	"github.com/containerd/containerd"
 	"github.com/containerd/containerd/cio"
