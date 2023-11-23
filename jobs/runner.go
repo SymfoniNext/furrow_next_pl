@@ -75,7 +75,7 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 	}
 
 	//image, err := j.client.Pull(ctx, job.GetImage(), containerd.WithResolver(resolver))
-	image, err := j.client.Pull(ctx, "docker.io/library/redis:latest")
+	image, err := j.client.Pull(ctx, job.GetImage())
 	if err != nil {
 		log.WithFields(logFields).Warn(err)
 		jobStatus.Err = err
