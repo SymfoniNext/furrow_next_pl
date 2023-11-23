@@ -2,14 +2,13 @@ package jobs
 
 import (
 	"errors"
+	"github.com/SymfoniNext/furrow_next_pl/broker"
+	"github.com/SymfoniNext/furrow_next_pl/furrow"
 	"github.com/containerd/containerd"
 	"github.com/containerd/containerd/cio"
 	"github.com/containerd/containerd/oci"
 	"strconv"
 	"sync"
-
-	"github.com/SymfoniNext/furrow_next_pl/broker"
-	"github.com/SymfoniNext/furrow_next_pl/furrow"
 
 	log "github.com/sirupsen/logrus"
 
