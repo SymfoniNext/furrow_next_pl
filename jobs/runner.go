@@ -7,7 +7,6 @@ import (
 	"github.com/containerd/containerd"
 	"github.com/containerd/containerd/cio"
 	"github.com/containerd/containerd/oci"
-	"github.com/opencontainers/runtime-spec/specs-go"
 	"strconv"
 	"sync"
 
@@ -82,7 +81,7 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 		return jobStatus
 	}
 
-	var hostConfig *oci.Spec
+	//var hostConfig *oci.Spec
 	if job.GetVolumes() != nil {
 		logFields["volumes"] = job.GetVolumes()
 		binds := make([]string, 0)
@@ -93,22 +92,22 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 			binds = append(binds, job.Volumes.GetIn()+":"+volumeOutMount)
 		}
 
-		if len(binds) > 0 {
-			hostConfig = &oci.Spec{
-				Mounts: []specs.Mount{
-					{
-						Type:        "bind",
-						Source:      job.Volumes.GetIn(),
-						Destination: volumeInMount,
-					},
-					{
-						Type:        "bind",
-						Source:      job.Volumes.GetOut(),
-						Destination: volumeOutMount,
-					},
-				},
-			}
-		}
+		//if len(binds) > 0 {
+		//	hostConfig = &oci.Spec{
+		//		Mounts: []specs.Mount{
+		//			{
+		//				Type:        "bind",
+		//				Source:      job.Volumes.GetIn(),
+		//				Destination: volumeInMount,
+		//			},
+		//			{
+		//				Type:        "bind",
+		//				Source:      job.Volumes.GetOut(),
+		//				Destination: volumeOutMount,
+		//			},
+		//		},
+		//	}
+		//}
 	}
 	// option to schedule a service instead?
 	log.WithFields(logFields).Info("Creating container...")
