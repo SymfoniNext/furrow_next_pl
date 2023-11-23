@@ -80,20 +80,19 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 	// how are we pulling private repos?
 	resolver := docker.NewResolver(docker.ResolverOptions{
 		Hosts: func(host string) ([]docker.RegistryHost, error) {
-			if host == "docker.io" {
-				return []docker.RegistryHost{
-					{
-						Client: http.DefaultClient,
-						Host:   host,
-						Scheme: "http",
-						Path:   "",
-						Authorizer: docker.NewDockerAuthorizer(docker.WithAuthCreds(func(host string) (string, string, error) {
-							return j.username, j.password, nil
-						})),
-						Capabilities: docker.HostCapabilityPull | docker.HostCapabilityResolve | docker.HostCapabilityPush,
-					},
-				}, nil
-			}
+			return []docker.RegistryHost{
+				{
+					Client: http.DefaultClient,
+					Host:   host,
+					Scheme: "http",
+					Path:   "",
+					Authorizer: docker.NewDockerAuthorizer(docker.WithAuthCreds(func(host string) (string, string, error) {
+						return j.username, j.password, nil
+					})),
+					Capabilities: docker.HostCapabilityPull | docker.HostCapabilityResolve | docker.HostCapabilityPush,
+				},
+			}, nil
+
 			return docker.ConfigureDefaultRegistries()(host)
 		},
 	})
