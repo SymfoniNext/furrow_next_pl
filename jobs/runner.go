@@ -119,7 +119,7 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 		containerd.WithNewSpec(
 			oci.WithProcessArgs(job.GetCmd()...),
 			oci.WithEnv(job.GetEnv()),
-			oci.WithMounts(hostConfig.Mounts),
+			//oci.WithMounts(hostConfig.Mounts),
 		),
 	)
 	defer container.Delete(ctx, containerd.WithSnapshotCleanup)
