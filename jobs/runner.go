@@ -77,7 +77,12 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 	//image, err := j.client.Pull(ctx, job.GetImage(), containerd.WithResolver(resolver))
 	image, err := j.client.Pull(ctx, job.GetImage())
 	if err != nil {
-		log.WithFields(logFields).Warn(err)
+		log.WithFields(log.Fields{
+			"job":        job,
+			"error":      err,
+			"image_name": job.GetImage(),
+		}).Warn("Error pulling image")
+
 		jobStatus.Err = err
 		jobStatus.Bury = true
 		return jobStatus
@@ -105,6 +110,9 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 			oci.WithEnv(job.GetEnv()),
 		),
 	)
+	if err != nil {
+		log.WithFields(logFields).WithError(err).Error("Failed to create container")
+	}
 
 	defer container.Delete(ctx, containerd.WithSnapshotCleanup)
 
@@ -120,9 +128,14 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 	log.WithFields(logFields).Info("Starting container")
 
 	task, taskErr := container.NewTask(ctx, cio.NewCreator(cio.WithStdio))
+
 	if taskErr != nil {
-		log.WithFields(logFields).Info(err)
-		jobStatus.Err = err
+		log.WithFields(log.Fields{
+			"error":        errors.WithStack(taskErr),
+			"container_id": container.ID(),
+		}).Error("Failed to create new task for container")
+
+		jobStatus.Err = taskErr
 		jobStatus.Bury = true
 		return jobStatus
 	}
