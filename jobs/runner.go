@@ -100,7 +100,7 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 
 	}
 	// option to schedule a service instead?
-	log.WithFields(logFields).Info("Creating container...")
+	log.WithFields(logFields).Info("Creating a container...")
 	container, err := j.client.NewContainer(
 		ctx,
 		strconv.FormatUint(jobID, 10),
@@ -131,7 +131,7 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 
 	if taskErr != nil {
 		log.WithFields(log.Fields{
-			"error":        errors.WithStack(taskErr),
+			"error":        taskErr,
 			"container_id": container.ID(),
 		}).Error("Failed to create new task for container")
 
