@@ -133,7 +133,7 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 		log.WithFields(log.Fields{
 			"error":        taskErr,
 			"container_id": container.ID(),
-		}).Error("Failed to create new task for container")
+		}).Error("Failed to create new task for container...")
 
 		jobStatus.Err = taskErr
 		jobStatus.Bury = true
