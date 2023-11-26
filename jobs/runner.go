@@ -4,11 +4,12 @@ import (
 	"errors"
 	"github.com/SymfoniNext/furrow_next_pl/broker"
 	"github.com/SymfoniNext/furrow_next_pl/furrow"
+	"net/http"
 
 	"github.com/containerd/containerd"
 	"github.com/containerd/containerd/cio"
 	"github.com/containerd/containerd/oci"
-
+	"github.com/containerd/containerd/remotes/docker"
 	"strconv"
 	"sync"
 
@@ -74,8 +75,29 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 		Notify: job.GetNotify(),
 	}
 
-	//image, err := j.client.Pull(ctx, job.GetImage(), containerd.WithResolver(resolver))
-	image, err := j.client.Pull(ctx, job.GetImage())
+	// Image doesn't exist, so we need to get it
+	// how are we pulling private repos?
+	resolver := docker.NewResolver(docker.ResolverOptions{
+		Hosts: func(host string) ([]docker.RegistryHost, error) {
+			return []docker.RegistryHost{
+				{
+					Client: http.DefaultClient,
+					Host:   host,
+					Scheme: "http",
+					Path:   "",
+					Authorizer: docker.NewDockerAuthorizer(docker.WithAuthCreds(func(host string) (string, string, error) {
+						return j.username, j.password, nil
+					})),
+					Capabilities: docker.HostCapabilityPull | docker.HostCapabilityResolve | docker.HostCapabilityPush,
+				},
+			}, nil
+
+			return docker.ConfigureDefaultRegistries()(host)
+		},
+	})
+
+	image, err := j.client.Pull(ctx, job.GetImage(), containerd.WithResolver(resolver))
+	//image, err := j.client.Pull(ctx, "docker.io/library/redis:latest")
 	if err != nil {
 		log.WithFields(log.Fields{
 			"job":        job,
