@@ -205,3 +205,17 @@ kubectl port-forward --namespace suite-production $(kubectl get pod --namespace 
 ```shell
 node tester.js
 ```
+
+# LOCAL EXEC
+Tested on WSL2 Ubuntu 20.04
+```shell
+#Run containerd process
+sudo echo -n ; sudo containerd
+
+#Run beanstalkd server
+docker run --name some-beanstalkd -d -p 11300:11300 maateen/docker-beanstalkd
+
+#Modify settings in the furrow.go file
+# then run (SPECIFIC FOR JANOCHA): sudo /usr/local/go/bin/go run furrow.go
+go run furrow.go
+```

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	//"furrow_next_pl/jobs"
 	"github.com/containerd/containerd"
 	"net/http"
 	"os"
@@ -59,7 +60,7 @@ func main() {
 	}
 
 	log.WithField("DOCKER_HOST", dockerEndpoint).Info("Connecting to Containerd")
-	client, err := containerd.New(dockerEndpoint, containerd.WithDefaultNamespace("docker"))
+	client, err := containerd.New(dockerEndpoint, containerd.WithDefaultNamespace("furrow_docker"))
 	if err != nil {
 		log.Error("Cannot connect to containerd socket.", err)
 		return

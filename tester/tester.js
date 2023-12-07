@@ -16,9 +16,15 @@ load('job.proto', (err, root) => {
 
   var job = root.lookupType("janochapack.Job");
   var payload = {
-    RequestID: "12345",
-    Image: "docker.io/library/redis:latest",
-    Cmd: ["-m conversion -in /in/DOCUMENT_CONTENT-1146645.pdf -f PNG -image_width 200 -image_only_first_page"]
+    // RequestID: "12345",
+    // Image: "library/redis:latest",
+    Image: "symfoni/email-parser:9e7ce4e",
+    Cmd: ["-in", "/in/msg.eml", "-out", "/out/EMAIL-PARSING-1241492.pb"],
+    volumes: {
+      In: "/furrow/in",
+      Out: "/furrow/out"
+    }
+    // Cmd: ["empty"]
   }
 
   var errMsg = job.verify(payload);
