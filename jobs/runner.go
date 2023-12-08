@@ -2,8 +2,8 @@ package jobs
 
 import (
 	"errors"
-	"github.com/SymfoniNext/furrow_next_pl/broker"
-	"github.com/SymfoniNext/furrow_next_pl/furrow"
+	"furrow_next_pl/broker"
+	"furrow_next_pl/furrow"
 	"github.com/containerd/containerd"
 	"github.com/containerd/containerd/cio"
 	"github.com/containerd/containerd/oci"
@@ -234,6 +234,7 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 			// -in /in/msg.eml", "-out /out/test.pb
 			//oci.WithProcessArgs("java", "-jar", "/email-parser/email-parser.jar"),
 			//oci.WithProcessCommandLine("-in /in/msg.eml"),
+			oci.WithPrivileged,
 			oci.WithEnv(job.GetEnv()),
 			oci.WithMounts(
 				mounts,
