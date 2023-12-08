@@ -217,12 +217,12 @@ func (j jobRunner) Run(ctx context.Context, job *furrow.Job) furrow.JobStatus {
 				Options:     []string{"rbind", "rw"},
 			})
 		}
-
 	}
 
 	log.WithFields(log.Fields{
-		"ociSpec": &ociSpec,
-	}).Info("Test config")
+		"mounts": mounts,
+		"vars":   job.GetEnv(),
+	}).Info("Mounting following binds")
 	container, err := j.client.NewContainer(
 		ctx,
 		strconv.FormatUint(jobID, 10),
