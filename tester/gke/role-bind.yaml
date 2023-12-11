@@ -1,0 +1,39 @@
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: jobs-access
+  namespace: jobs-ns
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: jobs-ns
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: jobs-access
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: jobs-access-kube
+  namespace: jobs-ns
+subjects:
+  - kind: ServiceAccount
+    name: job-controller
+    namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: jobs-access
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: jobs-access
+rules:
+  - apiGroups:
+      - '*'
+    resources:
+      - '*'
+    verbs:
+      - '*'

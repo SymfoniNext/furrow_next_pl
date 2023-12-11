@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: furrow
+  namespace: jobs-ns
+  labels:
+    app: furrow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: furrow
+  template:
+    metadata:
+      name: furrow
+      labels:
+        app: furrow
+    spec:
+      volumes:
+        - name: next-data
+          gcePersistentDisk:
+            pdName: furrow-gcepersistentdisk
+      containers:
+        - name: furrow
+          image: local_furrow:janocha-4
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /mnt/furrow
+              name: next-data
+      restartPolicy: Always

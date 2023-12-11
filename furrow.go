@@ -1,25 +1,29 @@
+//go:build linux
+
 package main
 
 import (
 	"context"
 	"furrow_next_pl/jobs"
-	"github.com/containerd/containerd"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	clientcmd "k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"sync"
 	"syscall"
 	"time"
 
 	"furrow_next_pl/broker"
 	"furrow_next_pl/furrow"
-	//"github.com/SymfoniNext/furrow_next_pl/jobs"
-
-	log "github.com/sirupsen/logrus"
 
 	"github.com/namsral/flag"
 	metrics "github.com/rcrowley/go-metrics"
 	"github.com/rcrowley/go-metrics/exp"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -50,6 +54,46 @@ func init() {
 	flag.StringVar(&publishMetrics, "publish-metrics", "", "Bind address/port to publish metrics on")
 }
 
+func connectToK8s() *kubernetes.Clientset {
+	//env := "local"
+	env := os.Getenv("IS_LOCAL_ENV")
+	log.WithFields(log.Fields{
+		"env": env,
+	}).Info("Env exec, empty means its running on cluster")
+	if len(env) > 0 {
+		var kubeconfig *string
+		if home := homedir.HomeDir(); home != "" {
+			kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+		} else {
+			kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+		}
+		flag.Parse()
+
+		config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+		if err != nil {
+			panic(err.Error())
+		}
+		clientset, err := kubernetes.NewForConfig(config)
+		if err != nil {
+			panic(err.Error())
+		}
+		return clientset
+	} else {
+		config, err := rest.InClusterConfig()
+		if err != nil {
+			log.Panicln("Failed to get in-cluster config")
+			log.Panicln(err)
+		}
+
+		clientset, err := kubernetes.NewForConfig(config)
+		if err != nil {
+			log.Panicln("Failed to create K8s clientset")
+		}
+
+		return clientset
+	}
+}
+
 func main() {
 	flag.Parse()
 
@@ -59,15 +103,17 @@ func main() {
 		help()
 	}
 
-	log.WithField("DOCKER_HOST", dockerEndpoint).Info("Connecting to Containerd")
-	client, err := containerd.New(dockerEndpoint, containerd.WithDefaultNamespace("furrow_docker"))
-	if err != nil {
-		log.Error("Cannot connect to containerd socket.", err)
-		return
-	}
+	client := connectToK8s()
 
-	state := client.Conn().GetState()
-	log.Info("Connection state to containerd: " + state.String())
+	//log.WithField("DOCKER_HOST", dockerEndpoint).Info("Connecting to Containerd")
+	//client, err := containerd.New(dockerEndpoint, containerd.WithDefaultNamespace("furrow_docker"))
+	//if err != nil {
+	//	log.Error("Cannot connect to containerd socket.", err)
+	//	return
+	//}
+	//
+	//state := client.Conn().GetState()
+	//log.Info("Connection state to containerd: " + state.String())
 
 	stop := make(chan struct{}, 1)
 	go func() {

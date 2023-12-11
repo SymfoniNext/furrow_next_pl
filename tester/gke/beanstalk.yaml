@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: beanstalk
+  namespace: jobs-ns
+  labels:
+    app: beanstalk
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: beanstalk
+  template:
+    metadata:
+      name: beanstalk
+      labels:
+        app: beanstalk
+    spec:
+      containers:
+        - name: beanstalk
+          image: maateen/docker-beanstalkd
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 11300
+              protocol: TCP
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: beanstalk
+  namespace: jobs-ns
+spec:
+  selector:
+    app: beanstalk
+  ports:
+    - protocol: TCP
+      port: 11300
+      targetPort: 11300
+  type: ClusterIP
+
