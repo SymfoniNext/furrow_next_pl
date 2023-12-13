@@ -1,0 +1,236 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "32"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"name":"next-suite","namespace":"suite-production"},"spec":{"replicas":1,"selector":{"matchLabels":{"customer":"next"}},"template":{"metadata":{"annotations":{"service-discovery.datadoghq.com/furrow.check_names":"[\"go_expvar\"]","service-discovery.datadoghq.com/furrow.init_configs":"[{}]","service-discovery.datadoghq.com/furrow.instances":"[{\"expvar_url\": \"http://%%host%%:4444/debug/metrics\", \"metrics\": [{\"path\": \"job.executed\", \"type\": \"rate\"}, {\"path\": \"job.execute_time.mean\"}], \"tags\": [\"furrow\", \"next-suite\"]}]","service-discovery.datadoghq.com/next-suite.check_names":"[\"tomcat\"]","service-discovery.datadoghq.com/next-suite.init_configs":"[{\"conf\":[{\"include\":{\"attribute\":{\"currentThreadCount\":{\"alias\":\"tomcat.threads.count\",\"metric_type\":\"gauge\"},\"currentThreadsBusy\":{\"alias\":\"tomcat.threads.busy\",\"metric_type\":\"gauge\"},\"maxThreads\":{\"alias\":\"tomcat.threads.max\",\"metric_type\":\"gauge\"}},\"type\":\"ThreadPool\"}},{\"include\":{\"attribute\":{\"bytesReceived\":{\"alias\":\"tomcat.bytes_rcvd\",\"metric_type\":\"counter\"},\"bytesSent\":{\"alias\":\"tomcat.bytes_sent\",\"metric_type\":\"counter\"},\"errorCount\":{\"alias\":\"tomcat.error_count\",\"metric_type\":\"counter\"},\"maxTime\":{\"alias\":\"tomcat.max_time\",\"metric_type\":\"gauge\"},\"processingTime\":{\"alias\":\"tomcat.processing_time\",\"metric_type\":\"counter\"},\"requestCount\":{\"alias\":\"tomcat.request_count\",\"metric_type\":\"counter\"}},\"type\":\"GlobalRequestProcessor\"}},{\"include\":{\"attribute\":{\"errorCount\":{\"alias\":\"tomcat.servlet.error_count\",\"metric_type\":\"counter\"},\"processingTime\":{\"alias\":\"tomcat.servlet.processing_time\",\"metric_type\":\"counter\"},\"requestCount\":{\"alias\":\"tomcat.servlet.request_count\",\"metric_type\":\"counter\"}},\"j2eeType\":\"Servlet\"}}]}]","service-discovery.datadoghq.com/next-suite.instances":"[{\"host\": \"%%host%%\", \"port\": \"8009\", \"name\": \"next-suite\", \"username\": \"tomcat\", \"password\": \"tomcat\", \"tags\": [\"next-suite\"]}]"},"labels":{"customer":"next","product":"suite","role":"webserver","tier":"backend"}},"spec":{"containers":[{"env":[{"name":"CATALINA_OPTS","value":"-Xms750m -Xmx4096m -Xss256k -XX:+UseParallelGC -XX:MaxGCPauseMillis=1500 -XX:GCTimeRatio=9 -server -XX:+DisableExplicitGC -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=8009 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"},{"name":"CAS_URL","value":"https://next.symfoni.com/cas"},{"name":"SUITE_URL","value":"https://next.symfoni.com/suite"},{"name":"SUITE_DATABASE_HOST","value":"suite-db"},{"name":"SUITE_DATABASE_NAME","value":"next"},{"name":"CAS_DATABASE_NAME","value":"next"},{"name":"SUITE_DATABASE_USERNAME","value":"next"},{"name":"SUITE_DATABASE_PASSWORD","valueFrom":{"secretKeyRef":{"key":"db-password","name":"next-suite"}}},{"name":"SUITE_STORAGE_PATH","value":"/var/lib/kubelet/plugins/kubernetes.io/gce-pd/mounts/suite-next-ssd-disk/files"},{"name":"SUITE_INDEX_PATH","value":"/var/lib/kubelet/plugins/kubernetes.io/gce-pd/mounts/suite-next-ssd-disk/indexes"},{"name":"DOC_CONVERTER_IMAGE","value":"symfoni/doc-converter:bf748c9"},{"name":"DOC_CONVERTER_STORAGE","value":"/var/lib/kubelet/plugins/kubernetes.io/gce-pd/mounts/suite-next-ssd-disk/doc-converter"},{"name":"SUITE_PAGINATON_CALCULATE_TOTAL","value":"true"},{"name":"SUITE_JTA_POOL_MIN","value":"1"},{"name":"SUITE_JTA_POOL_MAX","value":"30"},{"name":"SUITE_JTA_ACTIVE_TRANSACTION_MAX","value":"200"},{"name":"SUITE_JTA_TRANSACTION_TIMEOUT_DEFAULT","value":"300"},{"name":"SUITE_JTA_TRANSACTION_TIMEOUT_MAX","value":"7200"},{"name":"SUITE_SCHEDULER_THREAD_COUNT","value":"7"},{"name":"SUITE_SCHEDULER_MISFIRE_THRESHOLD","value":"60000"},{"name":"BEANSTALKD_HOST","value":"localhost"},{"name":"BEANSTALKD_PORT","value":"11300"},{"name":"BEANSTALKD_TUBE_IN","value":"jobs"},{"name":"BEANSTALKD_TUBE_OUT","value":"next-rpc"},{"name":"EMAIL_PARSER_STORAGE","value":"/var/lib/kubelet/plugins/kubernetes.io/gce-pd/mounts/suite-next-ssd-disk/email"},{"name":"EMAIL_PARSER_IMAGE","value":"symfoni/email-parser:9e7ce4e"},{"name":"EMAIL_SEND_STORAGE","value":"/var/lib/kubelet/plugins/kubernetes.io/gce-pd/mounts/suite-next-ssd-disk/email-send"},{"name":"EMAIL_SEND_IMAGE","value":"symfoni/mailgun-send:13880f2"},{"name":"API_KEY","valueFrom":{"secretKeyRef":{"key":"api-key","name":"mailgun-eu"}}},{"name":"EMAIL_DOMAIN","valueFrom":{"secretKeyRef":{"key":"email-domain","name":"mailgun-eu"}}},{"name":"STAT_AGENT_HOST","value":"dd-agent.shared-tooling.svc.cluster.local:8125"},{"name":"ELASTICSEARCH_HOST","value":"elasticsearch.shared-tooling:9200"},{"name":"ELASTICSEARCH_INDEX_NAME","value":"next-suite"},{"name":"ELASTICSEARCH_TEXT_ANALYZER","value":"norwegian"},{"name":"ELASTICSEARCH_MAX_RESULT","value":"100"}],"image":"symfoni/suite:ac99a1f","imagePullPolicy":"Always","name":"next-suite","ports":[{"containerPort":8080},{"containerPort":8009}],"volumeMounts":[{"mountPath":"/var/lib/kubelet/plugins/kubernetes.io/gce-pd/mounts/suite-next-ssd-disk","name":"next-data"}]},{"args":["-b","/binlog"],"image":"symfoni/beanstalkd:latest","imagePullPolicy":"Always","name":"beanstalkd","ports":[{"containerPort":11300}],"resources":{"requests":{"cpu":"50m","memory":"28Mi"}},"volumeMounts":[{"mountPath":"/binlog","name":"next-data","subPath":"binlog"}]},{"env":[{"name":"BEANSTALK_HOST","value":"localhost:11300"},{"name":"WORKERS","value":"5"},{"name":"TUBE","value":"jobs"},{"name":"PUBLISH_METRICS","value":":4444"},{"name":"DOCKER_USERNAME","valueFrom":{"secretKeyRef":{"key":"username","name":"docker-hub-literal"}}},{"name":"DOCKER_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"docker-hub-literal"}}}],"image":"europe-west1-docker.pkg.dev/suite-183211/suite-repo/furrow_next:janocha-10","imagePullPolicy":"Always","name":"furrow","ports":[{"containerPort":4444}],"resources":{"requests":{"cpu":"50m"}},"securityContext":{"privileged":true,"runAsUser":0},"volumeMounts":[{"mountPath":"/etc/ssl/certs","name":"ssl-volume"}]}],"imagePullSecrets":[{"name":"docker-hub"}],"volumes":[{"hostPath":{"path":"/var/run/docker.sock"},"name":"docker-socket"},{"hostPath":{"path":"/run/containerd/containerd.sock"},"name":"containerd-socket"},{"hostPath":{"path":"/tmp"},"name":"tmp-vol"},{"gcePersistentDisk":{"fsType":"ext4","pdName":"suite-next-ssd-disk"},"name":"next-data"},{"name":"config-volume","secret":{"defaultMode":420,"secretName":"my-containerd-config"}},{"name":"hosts-volume","secret":{"defaultMode":420,"secretName":"my-containerd-hosts"}},{"name":"cert-volume","secret":{"defaultMode":420,"secretName":"docker-cert"}},{"hostPath":{"path":"/etc/ssl/certs","type":""},"name":"ssl-volume"}]}}}}
+  name: next-suite
+  namespace: suite-production
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      customer: next
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        service-discovery.datadoghq.com/furrow.check_names: '["go_expvar"]'
+        service-discovery.datadoghq.com/furrow.init_configs: '[{}]'
+        service-discovery.datadoghq.com/furrow.instances: '[{"expvar_url": "http://%%host%%:4444/debug/metrics",
+          "metrics": [{"path": "job.executed", "type": "rate"}, {"path": "job.execute_time.mean"}],
+          "tags": ["furrow", "next-suite"]}]'
+        service-discovery.datadoghq.com/next-suite.check_names: '["tomcat"]'
+        service-discovery.datadoghq.com/next-suite.init_configs: '[{"conf":[{"include":{"attribute":{"currentThreadCount":{"alias":"tomcat.threads.count","metric_type":"gauge"},"currentThreadsBusy":{"alias":"tomcat.threads.busy","metric_type":"gauge"},"maxThreads":{"alias":"tomcat.threads.max","metric_type":"gauge"}},"type":"ThreadPool"}},{"include":{"attribute":{"bytesReceived":{"alias":"tomcat.bytes_rcvd","metric_type":"counter"},"bytesSent":{"alias":"tomcat.bytes_sent","metric_type":"counter"},"errorCount":{"alias":"tomcat.error_count","metric_type":"counter"},"maxTime":{"alias":"tomcat.max_time","metric_type":"gauge"},"processingTime":{"alias":"tomcat.processing_time","metric_type":"counter"},"requestCount":{"alias":"tomcat.request_count","metric_type":"counter"}},"type":"GlobalRequestProcessor"}},{"include":{"attribute":{"errorCount":{"alias":"tomcat.servlet.error_count","metric_type":"counter"},"processingTime":{"alias":"tomcat.servlet.processing_time","metric_type":"counter"},"requestCount":{"alias":"tomcat.servlet.request_count","metric_type":"counter"}},"j2eeType":"Servlet"}}]}]'
+        service-discovery.datadoghq.com/next-suite.instances: '[{"host": "%%host%%",
+          "port": "8009", "name": "next-suite", "username": "tomcat", "password":
+          "tomcat", "tags": ["next-suite"]}]'
+      labels:
+        customer: next
+        product: suite
+        role: webserver
+        tier: backend
+    spec:
+      containers:
+        - env:
+            - name: CATALINA_OPTS
+              value: -Xms750m -Xmx4096m -Xss256k -XX:+UseParallelGC -XX:MaxGCPauseMillis=1500
+                -XX:GCTimeRatio=9 -server -XX:+DisableExplicitGC -Dcom.sun.management.jmxremote
+                -Dcom.sun.management.jmxremote.port=8009 -Dcom.sun.management.jmxremote.ssl=false
+                -Dcom.sun.management.jmxremote.authenticate=false
+            - name: CAS_URL
+              value: https://next.symfoni.com/cas
+            - name: SUITE_URL
+              value: https://next.symfoni.com/suite
+            - name: SUITE_DATABASE_HOST
+              value: suite-db
+            - name: SUITE_DATABASE_NAME
+              value: next
+            - name: CAS_DATABASE_NAME
+              value: next
+            - name: SUITE_DATABASE_USERNAME
+              value: next
+            - name: SUITE_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: db-password
+                  name: next-suite
+            - name: SUITE_STORAGE_PATH
+              value: /var/lib/kubelet/plugins/kubernetes.io/gce-pd/mounts/suite-next-ssd-disk/files
+            - name: SUITE_INDEX_PATH
+              value: /var/lib/kubelet/plugins/kubernetes.io/gce-pd/mounts/suite-next-ssd-disk/indexes
+            - name: DOC_CONVERTER_IMAGE
+              value: symfoni/doc-converter:bf748c9
+            - name: DOC_CONVERTER_STORAGE
+              value: /var/lib/kubelet/plugins/kubernetes.io/gce-pd/mounts/suite-next-ssd-disk/doc-converter
+            - name: SUITE_PAGINATON_CALCULATE_TOTAL
+              value: "true"
+            - name: SUITE_JTA_POOL_MIN
+              value: "1"
+            - name: SUITE_JTA_POOL_MAX
+              value: "30"
+            - name: SUITE_JTA_ACTIVE_TRANSACTION_MAX
+              value: "200"
+            - name: SUITE_JTA_TRANSACTION_TIMEOUT_DEFAULT
+              value: "300"
+            - name: SUITE_JTA_TRANSACTION_TIMEOUT_MAX
+              value: "7200"
+            - name: SUITE_SCHEDULER_THREAD_COUNT
+              value: "7"
+            - name: SUITE_SCHEDULER_MISFIRE_THRESHOLD
+              value: "60000"
+            - name: BEANSTALKD_HOST
+              value: localhost
+            - name: BEANSTALKD_PORT
+              value: "11300"
+            - name: BEANSTALKD_TUBE_IN
+              value: jobs
+            - name: BEANSTALKD_TUBE_OUT
+              value: next-rpc
+            - name: EMAIL_PARSER_STORAGE
+              value: /var/lib/kubelet/plugins/kubernetes.io/gce-pd/mounts/suite-next-ssd-disk/email
+            - name: EMAIL_PARSER_IMAGE
+              value: symfoni/email-parser:9e7ce4e
+            - name: EMAIL_SEND_STORAGE
+              value: /var/lib/kubelet/plugins/kubernetes.io/gce-pd/mounts/suite-next-ssd-disk/email-send
+            - name: EMAIL_SEND_IMAGE
+              value: symfoni/mailgun-send:13880f2
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: api-key
+                  name: mailgun-eu
+            - name: EMAIL_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  key: email-domain
+                  name: mailgun-eu
+            - name: STAT_AGENT_HOST
+              value: dd-agent.shared-tooling.svc.cluster.local:8125
+            - name: ELASTICSEARCH_HOST
+              value: elasticsearch.shared-tooling:9200
+            - name: ELASTICSEARCH_INDEX_NAME
+              value: next-suite
+            - name: ELASTICSEARCH_TEXT_ANALYZER
+              value: norwegian
+            - name: ELASTICSEARCH_MAX_RESULT
+              value: "100"
+          image: symfoni/suite:ac99a1f
+          imagePullPolicy: Always
+          name: next-suite
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 8009
+              protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /var/lib/kubelet/plugins/kubernetes.io/gce-pd/mounts/suite-next-ssd-disk
+              name: next-data
+        - args:
+            - -b
+            - /binlog
+          image: symfoni/beanstalkd:latest
+          imagePullPolicy: Always
+          name: beanstalkd
+          ports:
+            - containerPort: 11300
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 50m
+              memory: 28Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /binlog
+              name: next-data
+              subPath: binlog
+        - env:
+            - name: BEANSTALK_HOST
+              value: localhost:11300
+            - name: WORKERS
+              value: "5"
+            - name: TUBE
+              value: jobs
+            - name: PUBLISH_METRICS
+              value: :4444
+            - name: DOCKER_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: docker-hub-literal
+            - name: DOCKER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: docker-hub-literal
+          image: europe-west1-docker.pkg.dev/suite-183211/suite-repo/furrow-next:docker
+          imagePullPolicy: Always
+          name: furrow
+          ports:
+            - containerPort: 4444
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 50m
+          securityContext:
+            privileged: true
+            runAsUser: 0
+            capabilities:
+              add:
+                - NET_ADMIN
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /etc/ssl/certs
+              name: ssl-volume
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: docker-hub
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - hostPath:
+            path: /var/run/docker.sock
+            type: ""
+          name: docker-socket
+        - hostPath:
+            path: /run/containerd/containerd.sock
+            type: ""
+          name: containerd-socket
+        - hostPath:
+            path: /tmp
+            type: ""
+          name: tmp-vol
+        - gcePersistentDisk:
+            fsType: ext4
+            pdName: suite-next-ssd-disk
+          name: next-data
+        - name: config-volume
+          secret:
+            defaultMode: 420
+            secretName: my-containerd-config
+        - name: hosts-volume
+          secret:
+            defaultMode: 420
+            secretName: my-containerd-hosts
+        - name: cert-volume
+          secret:
+            defaultMode: 420
+            secretName: docker-cert
+        - hostPath:
+            path: /etc/ssl/certs
+            type: ""
+          name: ssl-volume
